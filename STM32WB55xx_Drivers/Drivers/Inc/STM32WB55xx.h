@@ -299,6 +299,46 @@ typedef struct
 
 
 /*
+ * Peripheral register definition structure for USART
+ */
+typedef struct
+{
+	__vo uint32_t CR1;	//Two modes - FIFO mode enabled / FIFO mode disabled
+	__vo uint32_t CR2;
+	__vo uint32_t CR3;
+	__vo uint32_t BRR;
+	__vo uint32_t GTPR;
+	__vo uint32_t RTOR;
+	__vo uint32_t RQR;
+	__vo uint32_t ISR;	//Two modes - FIFO mode enabled / FIFO mode disabled
+	__vo uint32_t ICR;
+	__vo uint32_t RDR;
+	__vo uint32_t TDR;
+	__vo uint32_t PRESC;
+
+}USART_RegDef_t;
+
+/*
+ * Peripheral register definition structure for LPUART
+ */
+typedef struct
+{
+	__vo uint32_t CR1;	//Two modes - FIFO mode enabled / FIFO mode disabled
+	__vo uint32_t CR2;
+	__vo uint32_t CR3;
+	__vo uint32_t BRR;
+	__vo uint32_t Reserved[2];
+	__vo uint32_t RQR;
+	__vo uint32_t ISR;	//Two modes - FIFO mode enabled / FIFO mode disabled
+	__vo uint32_t ICR;
+	__vo uint32_t RDR;
+	__vo uint32_t TDR;
+	__vo uint32_t PRESC;
+
+}LPUART_RegDef_t;
+
+
+/*
  * Peripheral definitions (Peripheral base addresses type casted xx_RefDef_t)
  */
 #define GPIOA	((GPIO_RegDef_t*) GPIOA_BASEADDR)
@@ -319,9 +359,12 @@ typedef struct
 #define SPI2	((SPI_RegDef_t*) SPI2_BASEADDR)
 
 //I2Cx base address type casted:
-#define I2C1	((I2C_RegDef_t*)) I2C1_BASEADDR)
-#define I2C3	((I2C_RegDef_t*)) I2C3_BASEADDR)
+#define I2C1	((I2C_RegDef_t*) I2C1_BASEADDR)
+#define I2C3	((I2C_RegDef_t*) I2C3_BASEADDR)
 
+//UARTx/USARTx base address type casted:
+#define USART1	((USART_RegDef_t*) USART1_BASEADRR)
+#define LPUART1	((LPUART_RegDef_t*) LPUART1_BASEADDR)
 
 /*
  * Clock enable macros for GPIOx peripherals
@@ -346,15 +389,15 @@ typedef struct
 #define SPI2_PCLK_EN()	( RCC->APB1ENR1 |= (1 << 14) )
 
 /*
- * Clock enable macros for USARTx peripherals
+ * Clock enable macros for UARTx/USARTx peripherals
  */
-
+#define USART1_PCLK_EN()	(RCC->APB2ENR |= (1 << 14))
+#define LPUART1_PCLK_EN()	(RCC->APB1ENR2 |= (1 << 0))
 
 /*
  * Clock enable macros for SYSCFG peripheral
  */
-//Have to check this in the User Manual (I didn't find the Clock enable bit in peripheral APB2 to which SYSCFG is hanging
-//#define SYSCFG_PCLK_EN() 	( RCC )
+//It is enabled by default. So no need of macros
 
 /*
  * Clock Disable macros for GPIOx peripherals
@@ -381,12 +424,13 @@ typedef struct
 /*
  * Clock disable macros for USARTx peripherals
  */
-
+#define USART1_PCLK_DI()	(RCC->APB2ENR &= ~(1 << 14))
+#define LPUART1_PCLK_DI()	(RCC->APB1ENR2 &= ~(1 << 0))
 
 /*
  * Clock disable macros for SYSCFG peripheral
  */
-
+// Not required
 
 /*
  * Macros to reset GPIO peripherals
@@ -408,6 +452,9 @@ typedef struct
 #define I2C1_REG_RESET()		do{ (RCC->APB2RSTR |= (1 << 12)); (RCC->APB2RSTR &= ~(1 << 12)); }while(0)
 #define I2C3_REG_RESET()		do{ (RCC->APB1RSTR1 |= (1 << 14)); (RCC->APB1RSTR1 &= ~(1 << 14)); }while(0)
 
+//Macros to reset USART peripherals
+#define USART1_REG_RESET()		do{ (RCC->APB2RSTR |= (1 << 14)); (RCC->APB2RSTR &= ~(1 << 14)); }while(0)
+#define LPUART1_REG_RESET()		do{ (RCC->APB1RSTR2 |= (1 << 0)); (RCC->APB1RSTR2 &= ~(1 << 0)); }while(0)
 
 
 //Macro to return the code corresponding to the given GPIO port
@@ -429,8 +476,11 @@ typedef struct
 #define IRQ_NO_EXTI_5_9		23
 #define IRQ_NO_EXTI_10_15	40
 
-#define IRQ_NO_SPI1			25
-#define IRQ_NO_SPI2			26
+#define IRQ_NO_SPI1			34 // In CPU2 -> 25
+#define IRQ_NO_SPI2			35 // In CPU2 -> 26
+
+#define IRQ_NO_USART1		36 // In CPU2 -> 27
+#define IRQ_NO_LPUSART1		37 // In CPU2 -> 28
 
 
 //Some Generic macros
@@ -560,10 +610,140 @@ typedef struct
 #define I2Cx_ICR_TIMEOUTCF		12
 #define I2Cx_ICR_ALERTCF		13
 
+/****************************************************************
+ * Bit position definitions of USARTx peripheral
+ ****************************************************************/
+//USARTx CR1 register
+#define USARTx_CR1_UE			0
+#define USARTx_CR1_UESM			1
+#define USARTx_CR1_RE			2
+#define USARTx_CR1_TE			3
+#define USARTx_CR1_IDLEIE		4
+#define USARTx_CR1_RXFNEIE		5
+#define USARTx_CR1_TCIE			6
+#define USARTx_CR1_TXFNFIE		7
+#define USARTx_CR1_PEIE			8
+#define USARTx_CR1_PS			9
+#define USARTx_CR1_PCE			10
+#define USARTx_CR1_WAKE			11
+#define USARTx_CR1_M0			12
+#define USARTx_CR1_MME			13
+#define USARTx_CR1_CMIE			14
+#define USARTx_CR1_OVER8		15
+#define USARTx_CR1_DEDT			16		//DEDT[4:0]
+#define USARTx_CR1_DEAT			21		//DEAT[4:0]
+#define USARTx_CR1_RTOIE		26
+#define USARTx_CR1_EOBIE		27
+#define USARTx_CR1_M1			28
+#define USARTx_CR1_FIFOEN		29
+#define USARTx_CR1_TXFEIE		30		// Only in FIFO enable mode
+#define USARTx_CR1_RXFFIE		31		// Only in FIFO enable mode
+
+//USARTx CR2 register
+#define USARTx_CR2_SLVEN		0
+#define USARTx_CR2_DIS_NSS		3
+#define USARTx_CR2_ADDM7		4
+#define USARTx_CR2_LBDL			5
+#define USARTx_CR2_LBDIE		6
+#define USARTx_CR2_LBCL			8
+#define USARTx_CR2_CPHA			9
+#define USARTx_CR2_CPOL			10
+#define USARTx_CR2_CLKEN		11
+#define USARTx_CR2_STOP			12		// STOP[1:0]
+#define USARTx_CR2_LINEN		14
+#define USARTx_CR2_SWAP			15
+#define USARTx_CR2_RXINV		16
+#define USARTx_CR2_TXINV		17
+#define USARTx_CR2_DATAINV		18
+#define USARTx_CR2_MSBFIRST		19
+#define USARTx_CR2_ABREN		20
+#define USARTx_CR2_ABRMOD		21		// ABRMOD[1:0]
+#define USARTx_CR2_RTOEN		23
+#define USARTx_CR2_ADD			24		//ADD[7:0]
+
+//USARTx CR3 register
+#define USARTx_CR3_EIE			0
+#define USARTx_CR3_IREN			1
+#define USARTx_CR3_IRLP			2
+#define USARTx_CR3_HDSEL		3
+#define USARTx_CR3_NACK			4
+#define USARTx_CR3_SCEN			5
+#define USARTx_CR3_DMAR			6
+#define USARTx_CR3_DMAT			7
+#define USARTx_CR3_RTSE			8
+#define USARTx_CR3_CTSE			9
+#define USARTx_CR3_CTSIE		10
+#define USARTx_CR3_ONEBIT		11
+#define USARTx_CR3_OVRDIS		12
+#define USARTx_CR3_DDRE			13
+#define USARTx_CR3_DEM			14
+#define USARTx_CR3_DEP			15
+#define USARTx_CR3_SCARCNT		17		//SCARCNT[2:0]
+#define USARTx_CR3_WUS			20		//WUS[1:0]
+#define USARTx_CR3_WUFIE		22
+#define USARTx_CR3_TXFTIE		23
+#define USARTx_CR3_TCBGTIE		24
+#define USARTx_CR3_RXFTCFG		25		//RXFTCFG[2:0]
+#define USARTx_CR3_RXFTIE		28
+#define USARTx_CR3_TXFTCFG		29		//TXFTCFG[2:0]
+
+//USARTx ISR register
+
+#define USARTx_ISR_PE			0
+#define USARTx_ISR_FE			1
+#define USARTx_ISR_NE			2
+#define USARTx_ISR_ORE			3
+#define USARTx_ISR_IDLE			4
+#define USARTx_ISR_RXFNE		5
+#define USARTx_ISR_TC			6
+#define USARTx_ISR_TXFNF		7
+#define USARTx_ISR_LBDF			8
+#define USARTx_ISR_CTSIF		9
+#define USARTx_ISR_CTS			10
+#define USARTx_ISR_RTOF			11
+#define USARTx_ISR_EOBF			12
+#define USARTx_ISR_UDR			13
+#define USARTx_ISR_ABRE			14
+#define USARTx_ISR_ABRF			15
+#define USARTx_ISR_BUSY			16
+#define USARTx_ISR_CMF			17
+#define USARTx_ISR_SBKF			18
+#define USARTx_ISR_RWU			19
+#define USARTx_ISR_WUF			20
+#define USARTx_ISR_TEACK		21
+#define USARTx_ISR_REACK		22
+#define USARTx_ISR_TXFE			23		// Only in FIFO enable mode
+#define USARTx_ISR_RXFF			24		// Only in FIFO enable mode
+#define USARTx_ISR_TCBGT		25
+#define USARTx_ISR_RXFT			26
+#define USARTx_ISR_TXFT			27
+
+
+//USARTx Flag CLEAR register (ICR)
+#define USARTx_ICR_PECF			0
+#define USARTx_ICR_FECF			1
+#define USARTx_ICR_NECF			2
+#define USARTx_ICR_ORECF		3
+#define USARTx_ICR_IDLECF		4
+#define USARTx_ICR_TXFECF		5
+#define USARTx_ICR_TCCF			6
+#define USARTx_ICR_TCBGTCF		7
+#define USARTx_ICR_LBDCF		8
+#define USARTx_ICR_CTSCF		9
+#define USARTx_ICR_RTOCF		11
+#define USARTx_ICR_EOBCF		12
+#define USARTx_ICR_UDRCF		13
+#define USARTx_ICR_CMCF			17
+#define USARTx_ICR_WUCF			20
+
+
+
 
 
 
 #include <STM32WB55xx_Gpio_Driver.h>
 #include <STM32WB55xx_SPI_Driver.h>
+#include <STM32WB55xx_I2C_Driver.h>
+#include <STM32WB55xx_USART_Driver.h>
 
 #endif /* INC_STM32WB55XX_H_ */
