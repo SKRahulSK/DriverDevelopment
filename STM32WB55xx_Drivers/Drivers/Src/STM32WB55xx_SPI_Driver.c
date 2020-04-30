@@ -6,7 +6,7 @@
  */
 
 
-#include <STM32WB55xx_SPI_Driver.h> // The headerfile specific to SPI has to be included
+#include <STM32WB55xx_SPI_Driver.h> // The header file specific to SPI has to be included
 
 /*
  * Helper functions.
@@ -267,7 +267,7 @@ void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Length)
  *
  * @return            -
  *
- * @Note              - SPE bit of SSIx->CR1 register is set/reset
+ * @Note              - SPE bit of SPIx->CR1 register is set/reset
  */
 void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDis)
 {
@@ -427,15 +427,40 @@ uint8_t SPI_ReceiveDataINT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_
  */
 void SPI_IRQInterrupt_Config(uint8_t IRQNumber, uint8_t EnOrDis)
 {
+	//This configuration is done at the processor side
 	if(EnOrDis == ENABLE)
 	{
-		//Program ISER0 register
-		*NVIC_ISER0 = (1 << IRQNumber);
-	}
-	else
-	{
-		//Program ICER0 register
-		*NVIC_ICER0 = (1 << IRQNumber);
+		if(IRQNumber <= 31)
+		{
+			//Program ISER0 register
+			*NVIC_ISER0 = (1 << IRQNumber);
+
+		}else if(IRQNumber >= 32 && IRQNumber <= 63)
+		{
+			//Program ISER1 register
+			*NVIC_ISER1 = (1 << (IRQNumber % 32));
+
+		}else if(IRQNumber >= 64 && IRQNumber <= 95)
+		{
+			//Program ISER2 register
+			*NVIC_ISER2 = (1 << (IRQNumber % 64));
+		}
+	}else {
+		if(IRQNumber <= 31)
+		{
+			//Program ICER0 register
+			*NVIC_ICER0 = (1 << IRQNumber);
+
+		}else if(IRQNumber >= 32 && IRQNumber <= 63)
+		{
+			//Program ICER1 register
+			*NVIC_ICER1 = (1 << (IRQNumber % 32));
+
+		}else if(IRQNumber >= 64 && IRQNumber <= 95)
+		{
+			//Program ICER2 register
+			*NVIC_ICER1 = (1 << (IRQNumber % 64));
+		}
 	}
 
 }

@@ -60,8 +60,8 @@ int main(void)
 
 	//IRQ Configuration
 	//This is for GPIOB Pin-2
-	GPIO_IRQPriority_Config(IRQ_NO_EXTI_2, NVIC_IRQ_PRIORITY_10);
 	GPIO_IRQInterrupt_Config(IRQ_NO_EXTI_2, ENABLE);
+	GPIO_IRQPriority_Config(IRQ_NO_EXTI_2, NVIC_IRQ_PRIORITY_10);
 
 	//This is for GPIOB Pin-11
 	//GPIO_IRQPriority_Config(IRQ_NO_EXTI_10_15, NVIC_IRQ_PRIORITY_15);
