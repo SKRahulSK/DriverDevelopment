@@ -74,9 +74,12 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.302862519" name="MCU Output Converter Motorola S-rec with symbols" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1704902509.885449269" name="008SPICmdHandling.c" rcbsApplicability="disable" resourcePath="Src/008SPICmdHandling.c" toolsToInvoke="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1852107602.799988483">
+						<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1852107602.799988483" name="MCU GCC Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1852107602"/>
+					</fileInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry excluding="003ExtButtonLED.c|006SPITxTest.c|sysmem.c|007SPITxTestArduino.c|004ButtonInterrupt.c|005ButtonInterrupt2.c|002ButtonLEDToggle.c|001LEDToggel.c|syscalls.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry excluding="008SPICmdHandling.c|003ExtButtonLED.c|006SPITxTest.c|sysmem.c|007SPITxTestArduino.c|004ButtonInterrupt.c|005ButtonInterrupt2.c|002ButtonLEDToggle.c|001LEDToggel.c|syscalls.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
 					</sourceEntries>
 				</configuration>

@@ -619,9 +619,11 @@ typedef struct
 #define USARTx_CR1_RE			2
 #define USARTx_CR1_TE			3
 #define USARTx_CR1_IDLEIE		4
-#define USARTx_CR1_RXFNEIE		5
+#define USARTx_CR1_RXFNEIE		5		// FIFO mode enabled
+#define USARTx_CR1_RXNEIE		5		// FIFO mode disabled
 #define USARTx_CR1_TCIE			6
-#define USARTx_CR1_TXFNFIE		7
+#define USARTx_CR1_TXFNFIE		7		// FIFO mode enabled
+#define USARTx_CR1_TXEIE		7		// FIFO mode disabled
 #define USARTx_CR1_PEIE			8
 #define USARTx_CR1_PS			9
 #define USARTx_CR1_PCE			10
@@ -694,9 +696,11 @@ typedef struct
 #define USARTx_ISR_NE			2
 #define USARTx_ISR_ORE			3
 #define USARTx_ISR_IDLE			4
-#define USARTx_ISR_RXFNE		5
+#define USARTx_ISR_RXFNE		5		// FIFO mode enabled
+#define USARTx_ISR_RXNE			5		// FIFO mode disabled
 #define USARTx_ISR_TC			6
-#define USARTx_ISR_TXFNF		7
+#define USARTx_ISR_TXFNF		7		// FIFO mode enabled
+#define USARTx_ISR_TXE			7		// FIFO mode disabled
 #define USARTx_ISR_LBDF			8
 #define USARTx_ISR_CTSIF		9
 #define USARTx_ISR_CTS			10
@@ -745,5 +749,6 @@ typedef struct
 #include <STM32WB55xx_SPI_Driver.h>
 #include <STM32WB55xx_I2C_Driver.h>
 #include <STM32WB55xx_USART_Driver.h>
+#include <STM32WB55xx_RCC_Driver.h>
 
 #endif /* INC_STM32WB55XX_H_ */

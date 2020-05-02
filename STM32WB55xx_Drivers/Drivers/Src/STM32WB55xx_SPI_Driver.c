@@ -222,7 +222,8 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Length)
  * @brief             -
  *
  * @param[in]         - Base address of the SPI peripheral
- * @param[in]         - ENABLE/DISABLE
+ * @param[in]         - Buffer to store the received data
+ * @param[in]         - Length of Data Frame
  *
  * @return            -
  *
@@ -367,7 +368,7 @@ uint8_t SPI_SendDataINT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t L
 		//3. Enable the TXEIE control bit to get interrupt whenever TXE flag is set in SR.
 		pSPIHandle->pSPIx->CR2 |= ( 1 << SPIx_CR2_TXEIE);
 
-		//4. Data transmission will be handled by the ISR code.
+		//4. Data transmission will be handled by the ISR code. -> SPI_IRQHandling
 	}
 
 	state = pSPIHandle->TxState;
@@ -405,7 +406,7 @@ uint8_t SPI_ReceiveDataINT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_
 		//3. Enable the RXNEIE control bit to get interrupt whenever RXNE flag is set in SR.
 		pSPIHandle->pSPIx->CR2 |= ( 1 << SPIx_CR2_RXNEIE);
 
-		//4. Data reception part will be handled by the ISR code.
+		//4. Data reception part will be handled by the ISR code. -> SPI_IRQHandling
 	}
 
 	state = pSPIHandle->TxState;

@@ -110,7 +110,7 @@ void USART_Init(USART_Handle_t *pUSARTHandle)
 	}
 
    //Program the CR1 register
-	pUSARTHandle->pUSARTx->CR1 = TODO;
+	pUSARTHandle->pUSARTx->CR1 = tempreg;
 
 	/******************************** Configuration of CR2**************************************/
 
@@ -149,8 +149,8 @@ void USART_Init(USART_Handle_t *pUSARTHandle)
 
 	/********************** Configuration of BRR(Baudrate register)*****************************/
 
-	//Implement the code to configure the baud rate
-	//We will cover this in the lecture. No action required here
+	//Call the function to configure the baud rate
+	USART_SetBaudRate(pUSARTHandle->pUSARTx, pUSARTHandle->USARTConfig.USART_BaudRate);
 
 }
 
@@ -212,9 +212,9 @@ void USART_PeripheralControl(USART_RegDef_t *pUSARTx, uint8_t EnOrDis)
  *
  * @Note              -
  */
-uint8_t USART_GetFLagStatus(USART_RegDef_t *pUSARTx, uint32_t FlagName)
+uint8_t USART_GetFlagStatus(USART_RegDef_t *pUSARTx, uint32_t FlagName)
 {
-	if(pUSARTx->ISR & (1<< FlagName))
+	if( pUSARTx->ISR & FlagName )
 	{
 		return FLAG_SET;
 	}
@@ -235,10 +235,77 @@ uint8_t USART_GetFLagStatus(USART_RegDef_t *pUSARTx, uint32_t FlagName)
  *
  * @Note              -
  */
-void USART_ClearFLag(USART_RegDef_t *pUSARTx,uint16_t StatuFlagName)
+void USART_ClearFLag(USART_RegDef_t *pUSARTx,uint16_t FlagName)
+{
+	pUSARTx->ISR &= ~(1 << FlagName);
+}
+
+
+/*********************************************************************
+ * @fn      		  - USART_SetBaudRate
+ *
+ * @brief             -
+ *
+ * @param[in]         -
+ * @param[in]         -
+ * @param[in]         -
+ *
+ * @return            -
+ *
+ * @Note              -  Resolve all the TODOs
+
+ */
+void USART_SetBaudRate(USART_RegDef_t *pUSARTx, uint32_t BaudRate)
 {
 
+	//Variable to hold the APB clock
+	uint32_t PCLKx;
+
+	uint32_t USARTDIV;
+
+	uint32_t tempreg=0;
+
+	//Get the value of APB bus clock in to the variable PCLKx
+	if(pUSARTx == USART1)
+	{
+		//USART1 is hanging on APB2 bus
+		PCLKx = RCC_GetPCLK2Value();
+	}
+	else
+	{
+		//LPUART1 is hanging on APB1 bus
+		PCLKx = RCC_GetPCLK1Value();
+	}
+
+	//Check for OVER8 configuration bit
+	if(pUSARTx->CR1 & (1 << USARTx_CR1_OVER8))
+	{
+	    //OVER8 = 1 , over sampling by 8
+		USARTDIV = ((2 * PCLKx) / BaudRate);
+
+		//When OVER8 = 0, BRR = USARTDIV
+		pUSARTx->BRR |= (uint16_t)USARTDIV;
+	}
+	else
+	{
+	   //over sampling by 16
+		USARTDIV = (PCLKx / BaudRate);
+
+		//BRR[2:0] = USARTDIV[3:0] shifted 1 bit to the right.
+		//BRR[3] must be kept cleared
+		tempreg |= ( (USARTDIV & 0xF) >> 1 );
+		pUSARTx->BRR |= (uint16_t)tempreg;
+
+		tempreg = 0;
+		//BRR[15:4] = USARTDIV[15:4]
+		tempreg |= ( (USARTDIV & 0xFFF0) );
+		pUSARTx->BRR |= (uint16_t)tempreg;
+
+	}
+
 }
+
+
 
 /*********************************************************************
  * @fn      		  - USART_SendData
@@ -258,20 +325,20 @@ void USART_SendData(USART_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t L
 {
 	uint16_t *pdata;
    //Loop over until "Length" number of bytes are transferred
-	for(uint32_t i = 0 ; i < TODO; i++)
+	for(uint32_t i = 0 ; i < Length; i++)
 	{
-		//Implement the code to wait until TXE flag is set in the SR
-		while(! USART_GetFlagStatus(pUSARTHandle->pUSARTx,USART_FLAG_TODO));
+		//Implement the code to wait until TXE flag is set in the ISR
+		while( ! USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_TXE) );
 
          //Check the USART_WordLength item for 9BIT or 8BIT in a frame
-		if(pUSARTHandle->USART_Config.TODO == USART_WORDLEN_9BITS)
+		if(pUSARTHandle->USARTConfig.USART_WordLength == USART_WORDLEN_9BITS)
 		{
 			//if 9BIT, load the DR with 2bytes masking the bits other than first 9 bits
 			pdata = (uint16_t*) pTxBuffer;
-			TODO = (*pdata & (uint16_t)0x01FF);
+			pUSARTHandle->pUSARTx->TDR = (*pdata & (uint16_t)0x01FF);
 
 			//check for USART_ParityControl
-			if(pUSARTHandle->USART_Config.USART_ParityControl == USART_PARITY_DISABLE)
+			if(pUSARTHandle->USARTConfig.USART_ParityControl == USART_PARITY_DISABLE)
 			{
 				//No parity is used in this transfer. so, 9bits of user data will be sent
 				//Implement the code to increment pTxBuffer twice
@@ -285,20 +352,69 @@ void USART_SendData(USART_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t L
 				pTxBuffer++;
 			}
 		}
-		else
+		else if(pUSARTHandle->USARTConfig.USART_WordLength == USART_WORDLEN_8BITS)
 		{
 			//This is 8bit data transfer
-			pUSARTHandle->pUSARTx->DR = (*pTxBuffer  & (uint8_t)0xFF);
+			pUSARTHandle->pUSARTx->TDR = (*pTxBuffer  & (uint8_t)0xFF);
 
-			//Implement the code to increment the buffer address
-			TODO
+			//The code to increment the buffer address
+			pTxBuffer++;
+		}
+		else
+		{
+			//This is 7bit data transfer
+			pUSARTHandle->pUSARTx->TDR = (*pTxBuffer  & (uint8_t)0x7F);
+
+			//The code to increment the buffer address
+			pTxBuffer++;
 		}
 	}
 
-	//Implement the code to wait till TC flag is set in the SR
-	while( ! USART_GetFlagStatus(pUSARTHandle->pUSARTx,USART_FLAG_TODO));
+	//Implement the code to wait till TC flag is set in the ISR
+	while( ! USART_GetFlagStatus(pUSARTHandle->pUSARTx,USART_FLAG_TC));
 
 }
+
+
+/*********************************************************************
+ * @fn      		  - Interrupt based USART Send data function
+ *
+ * @brief             -
+ *
+ * @param[in]         -
+ * @param[in]         -
+ * @param[in]         -
+ *
+ * @return            - Txstate of USART
+ *
+ * @Note              -
+ */
+uint8_t USART_SendDataINT()
+{
+
+}
+
+
+/*********************************************************************
+ * @fn      		  - Data receiving function of USARTx
+ *
+ * @brief             -
+ *
+ * @param[in]         - Base address of the USART peripheral
+ * @param[in]         - Buffer to store the received data
+ * @param[in]         - Length of Data Frame
+ *
+ * @return            -
+ *
+ * @Note              -
+ */
+void USART_ReceiveData(USART_RegDef_t *pUSARTx, uint8_t* *pRxBuffer, uint32_t Length)
+{
+
+}
+
+
+
 
 
 /*********************************************************************
@@ -402,3 +518,11 @@ void USART_IRQHandling(USART_Handle_t *pUSARTHandle)
 }
 
 
+
+/*
+ * Weak implementation of Application Callback function
+ */
+__weak void USART_ApplicationEventCallback(USART_Handle_t *pUSARTHandle,uint8_t AppEv)
+{
+	//If the user application doesn't implement this function, then this function will be called.
+}

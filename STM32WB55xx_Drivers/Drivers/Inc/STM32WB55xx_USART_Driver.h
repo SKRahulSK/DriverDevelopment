@@ -34,6 +34,12 @@ typedef struct
 {
 	USART_RegDef_t *pUSARTx;
 	USART_Config_t USARTConfig;
+	uint8_t			*pTxBuffer;		/* !< To store the app. Tx buffer address > */
+	uint8_t			*pRxBuffer;		/* !< To store the app. Rx buffer address > */
+	uint32_t		TxLen;			/* !< To store the app. Tx length > */
+	uint32_t		RxLen;			/* !< To store the app. Rx length > */
+	uint8_t			TxState;		/* !< To store the app. Tx state > */
+	uint8_t			RxState;		/* !< To store the app. Rx state > */
 }USART_Handle_t;
 
 
@@ -101,9 +107,11 @@ typedef struct
  * USART flags
  */
 
-#define USART_FLAG_TXFE 		( 1 << USARTx_ISR_TXFE)
-#define USART_FLAG_RXFNE 		( 1 << USARTx_ISR_RXFNE)
-#define USART_FLAG_TC 			( 1 << USART_SR_TC)
+#define USART_FLAG_TXFNF 		( 1 << USARTx_ISR_TXFNF)		// Should be used when FIFO mode enabled
+#define USART_FLAG_TXE			USART_FLAG_TXFNF				// Should be used when FIFO mode disabled
+#define USART_FLAG_RXFNE 		( 1 << USARTx_ISR_RXFNE)	// Should be used when FIFO mode enabled
+#define USART_FLAG_RXNE			USART_FLAG_RXFNE			// Should be used when FIFO mode disabled
+#define USART_FLAG_TC 			( 1 << USARTx_ISR_TC)		// Transmission Complete Flag
 
 /*
  * Application states
@@ -135,14 +143,14 @@ void USART_Peri_Clk_Control(uint8_t EnOrDis);
 /*
  * Initialize and De-initialize/reset the USARTx
  */
-void USART_Init(USART_RegDef_t *pUSARTx, USART_Handle_t *pUSARTHandle);
+void USART_Init(USART_Handle_t *pUSARTHandle);
 void USART_DeInit();
 
 /*
  * Data send and receive
  */
 void USART_SendData(USART_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t Length);
-void USART_ReceiveData();
+void USART_ReceiveData(USART_RegDef_t *pUSARTx, uint8_t* *pRxBuffer, uint32_t Length);
 
 uint8_t USART_SendDataINT(); //Interrupt based
 uint8_t USART_ReceiveDataINT(); //Interrupt based
@@ -159,8 +167,9 @@ void USART_IRQHandling(USART_Handle_t *pUSARTHandle);
  * Other peripheral Control APIs
  */
 void USART_PeripheralControl(USART_RegDef_t *pUSARTx, uint8_t EnOrDis);
-uint8_t USART_GetFLagStatus(USART_RegDef_t *pUSARTx, uint32_t FlagName);
+uint8_t USART_GetFlagStatus(USART_RegDef_t *pUSARTx, uint32_t FlagName);
 void USART_ClearFLag(USART_RegDef_t *pUSARTx, uint16_t StatuFlagName);
+void USART_SetBaudRate(USART_RegDef_t *pUSARTx, uint32_t BaudRate);
 
 /*
  * Application callback

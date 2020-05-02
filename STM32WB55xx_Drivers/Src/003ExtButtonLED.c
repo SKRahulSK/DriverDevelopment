@@ -44,10 +44,6 @@ int main(void)
 	GpioButton.GPIO_PinConfig.GPIO_PinSpeed = GPIO_OP_SPEED_MEDIUM;
 	GpioButton.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
 
-	//Enable clock of the respective peripherals
-	GPIO_Peri_Clk_Control(GpioLed.pGPIOx, ENABLE); //GPIO_Peri_Clk_Control(GPIOB, ENABLE)
-	GPIO_Peri_Clk_Control(GpioButton.pGPIOx, ENABLE); //GPIO_Peri_Clk_Control(GPIOC, ENABLE)
-
 	//Initialize the GPIOs
 	GPIO_Init(&GpioLed);
 	GPIO_Init(&GpioButton);
